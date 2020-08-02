@@ -19,6 +19,33 @@ def onClickLink(event):
      webbrowser.get('chrome').open(link)
 
 
+#ТЕРРИТОРИЯ БАЗЫ ДАННЫХ
+#================================================================================================
+#подключаем нашу базу данных
+cnxn = pyodbc.connect("Driver={ODBC Driver 17 for SQL Server};"
+                      "Server=(LocalDb)\\MSSQLLocalDB;"
+                      "Database=LUL;"
+                      "Trusted_Connection=yes;")
+cursor = cnxn.cursor()
+
+#функция для получения авторов из базы данных
+def getDBAuthors():
+    global cursor
+    authors = []
+    cursor.execute("Select Distinct Author from Book")
+    for i in cursor.fetchall():
+        authors.append(i[0])
+    return authors
+
+#функция для получения списка тэгов книг из базы данных
+def getDBKeywords():
+    global cursor
+    authors = []
+    cursor.execute("Select Name from KeyWord")
+    for i in cursor.fetchall():
+        authors.append(i[0])
+    return authors
+
 #ИНТЕРФЕЙС ПОЛЬЗОВАТЕЛЯ
 #================================================================================================
 #главное окно программы
@@ -74,7 +101,7 @@ sf2.bind_scroll_wheel(root)
 frame_authors = sf2.display_widget(Frame, True)
 
 #значения выпадающего списка
-arrAuth = ["author1","author2","author3","author4", "author5", "author6"]
+arrAuth = getDBAuthors()
 
 #количество значений в списке(нужно для программы)
 length1 = len(arrAuth)
@@ -109,8 +136,7 @@ sf1.bind_arrow_keys(root)
 sf1.bind_scroll_wheel(root)
 frame_keywords = sf1.display_widget(Frame, True)
 
-#значения выпадающего списка
-arr = ["punkt1","punkt2","punkt3","punkt4", "punkt5", "punkt6"]
+arr = getDBKeywords()
 
 #количество значений в списке(нужно для программы)
 length = len(arr)
@@ -190,6 +216,7 @@ inner_frame = sf.display_widget(Frame, True)
 
 #функция-обработчик кнопки ПОИСКА
 def beginSearch(event):
+    global cursor
     global inner_frame
     global sf
 
@@ -213,7 +240,29 @@ def beginSearch(event):
     name = "name"
     link = "link"
     
-    #themeInputted = inputTheme.get()
+    author_inputted = None
+    for s in getAuthors(boolArrAuth):
+        author_inputted = s
+    
+    keywords = []
+    for s in getKeywords(boolArr):
+        keywords.append(s)
+
+    command = "select Book.Name,Book.Author,Book.Cloud_Link from Book"
+
+    command += """\njoin BookKeyWord on Book.Id = BookKeyWord.Book_Id\njoin KeyWord on BookKeyWord.KeyWord_Id = KeyWord.Id"""
+    if len(keywords) > 0:
+        command = command + "\nwhere Keyword.Name = N'" + '\' and Keyword.Name = N\''.join(keywords) + "\'"
+        if not (author_inputted is None):
+            command = command + " and Book.Author = N'" + author_inputted + "'"
+    else:
+        if not (author_inputted is None):
+            command = command + "\nwhere Book.Author = N'" + author_inputted + "'"
+    print(command)
+    cursor.execute(command)
+    for book in cursor.fetchall():
+        printArticle(book[1], "", book[0], book[2], inner_frame)
+    """
     authors_arrInputted = getAuthors(boolArrAuth)
     for s in authors_arrInputted:
         print(s+"\n")
@@ -225,13 +274,10 @@ def beginSearch(event):
 
     for i in range(1,random.randint(0,16)):
         printArticle(author, theme, name, link, inner_frame)
+    #"""
     
 #установка обработчика для кнопки поиска
 searchButton.bind('<Button-1>', beginSearch)
-
-
-
-
 
 
 #эту штуку надо в конец добавить
