@@ -10,7 +10,7 @@ import googleDriveClass as Drive
 
 #tags = ['Киберфизические системы', 'Цифровая экономика', 'Индустрия 4.0', 'Умные системы', 'Интернет людей', 'Интернет вещей', 'Интернет сервисов', 'Архитектура киберфизической системы', 'Разнородность данных в киберфизической системе',
 #        'Надежность в киберфизической системе', 'Управление данными в киберфизической системе', 'Конфиденциальность в киберфизической системе', 'Безопасность в киберфизической системе', 'Реальное время в киберфизической системе']
-tags = [('Киберфизические системы','Cyberphysical systems'), ('Цифровая экономика','Digital economy'), ('Индустрия 4.0', 'Industry 4.0'), ('Умные системы','Smart systems'), ('Интернет людей', 'Internet of people')]
+tags = ['Киберфизические системы', 'Цифровая экономика', 'Индустрия 4.0', 'Умные системы', 'Интернет людей']
 #подключаемся к базе данных
 cnxn = pyodbc.connect("Driver={ODBC Driver 17 for SQL Server};"
                       "Server=(LocalDb)\\MSSQLLocalDB;"
@@ -25,7 +25,7 @@ uploader = Drive.GDrive()
 cursor.execute("Delete from KeyWord")
 
 for tag in tags:
-    cursor.execute("Insert into KeyWord (Name) values ('"+tag+"')")
+    cursor.execute("Insert into KeyWord (Name) values (N'"+tag+"')")
 
 cnxn.commit()
 
@@ -45,9 +45,9 @@ for tag in tags:
             # Здесь уже нужно сделать загрузку файла который скачался
             #file_name путь к скаченной книге на диске
             file_name = Zlib.downloadBook(item)
-            drive_url=uploader.Upload(FILENAME=file_name, TITLE=file_name)
-            cursor.execute("Insert into Book (Download_Link,Cloud_Link,Author,Name,Language) "+\
-                "values (N'"+str(item['Link']).replace("'","")+"',"+"N'"+str(drive_url).replace("'","")+"',N'"+str(item['Author']).replace("'","")+"',N'"+str(item['Name']).replace("'","")+"','"+str(item['Language']).replace("'","")+"')")
+            drive_url=uploader.Upload(FILENAME=file_name)
+            cursor.execute("Insert into Book (Download_Link,Cloud_Link,Author,Name,Language,Format) "+\
+                "values (N'"+str(item['Link']).replace("'","")+"',"+"N'"+str(drive_url).replace("'","")+"',N'"+str(item['Author']).replace("'","")+"',N'"+str(item['Name']).replace("'","")+"','"+str(item['Language']).replace("'","")+"','"+str(item['Format']).replace("'","")+"')")
         cursor.execute("select book.Id from Book where book.Download_Link='"+str(item['Link'])+"'")
         book_id = cursor.fetchone()[0]
         print(book_id)
