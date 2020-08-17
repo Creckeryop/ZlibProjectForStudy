@@ -89,7 +89,7 @@ def changeFocus(event):
 root.bind('<Control_L>', changeFocus)
 
 #подсказка для пользователя
-Label(root, text="ПАРСЕР НАУЧНЫХ СТАТЕЙ", width = 75, height = 2, font="Arial 16").pack(pady = 15)
+Label(root, text="Поиск Научных Статей", width = 75, height = 2, font="Arial 16").pack(pady = 15)
 
 #первый фрейм
 #------------------------------------------------------------------------------------------------
