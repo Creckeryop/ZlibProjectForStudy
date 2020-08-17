@@ -269,8 +269,15 @@ def beginSearch(event):
     command = "select Book.Name,Book.Author,Book.Cloud_Link, Book.Language, Book.Format from Book"
 
     command += """\njoin BookKeyWord on Book.Id = BookKeyWord.Book_Id\njoin KeyWord on BookKeyWord.KeyWord_Id = KeyWord.Id"""
-    if len(keywords) > 0:
-        command = command + "\nwhere Keyword.Name = N'" + '\' and Keyword.Name = N\''.join(keywords) + "\'"
+    keywords_count = len(keywords)
+    if keywords_count > 0:
+        command = command + "\nwhere Keyword.Name = N'###KEYWORD###'"
+        pattern = command
+        for i in range(keywords_count):
+            if i != 0:
+                command = command + "\nintersect\n" + pattern.replace("###KEYWORD###",keywords[i])
+            else:
+                command = command.replace("###KEYWORD###",keywords[i])
         if not (author_inputted == "ЛЮБОЙ"):
             command = command + " and Book.Author = N'" + author_inputted + "'"
     else:
